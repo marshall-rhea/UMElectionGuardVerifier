@@ -1,10 +1,17 @@
+import glob
 from .read_json import read_json_file
 
 class Parameters():
     def __init__(self, root_path="../data/"):
         """inititalize parameters with default path ../data/"""
+        self.root_path = root_path
         self.context = read_json_file(root_path + "context.json")
         self.constants = read_json_file(root_path + "constants.json")
+        self.description = read_json_file(root_path + "description.json")
+
+    def get_root_path(self):
+        """get root path for data folder"""
+        return self.root_path
 
     def get_context(self):
         """get dictionary of context variables"""
@@ -13,6 +20,10 @@ class Parameters():
     def get_constants(self):
         """get dictionary of constants"""
         return self.constants
+
+    def get_description(self):
+        """get dictionary of election description"""
+        return self.description
 
     def get_large_prime_p(self):
         """get large prime p"""
@@ -41,8 +52,3 @@ class Parameters():
     def get_base_hash(self):
         """get base hash value Q"""
         return int(self.get_context().get('crypto_base_hash'))
-
-class Ballots():
-    def __init__(self, param: Parameters, root_path="../data/"):
-        self.param = param
-        self.ballot_path = root_path + "encrypted_ballots/"
