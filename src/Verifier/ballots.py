@@ -13,7 +13,11 @@ class Ballots():
         self.contest_selections = {} # contest names -> selections (list)
         self.contest_data = [] # all contest data
 
-    def fill_ballot_dic():
+    def fill_ballot_dic(self):
         """fill ballot dictionaries"""
+        
+    def fill_contest_name_order_dics(self):
+        """map names to order and order to names"""
 
+    
         
