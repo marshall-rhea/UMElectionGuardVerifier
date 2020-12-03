@@ -17,6 +17,7 @@ class Decryptor():
         """
 
         #check ballot tallies match cumulative products
+        self.verfy_accum_prod()
 
         #check equations
 
@@ -34,3 +35,6 @@ class Decryptor():
         #verify correct decryption by each trustee
         #B = M (∏ Mi) mod p
         #M = (g ^ t) mod p
+
+    def verfy_accum_prod(self):
+        
