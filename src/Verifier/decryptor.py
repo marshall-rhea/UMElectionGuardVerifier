@@ -36,5 +36,27 @@ class Decryptor():
         #B = M (∏ Mi) mod p
         #M = (g ^ t) mod p
 
-    def verfy_accum_prod(self):
-        
+    def verfy_accum_prod(self) -> bool:
+        """verify accum prod of ballot data matches tally"""
+        contest_data = self.ballots.get_accum_contest_dic()
+
+        contest_names = list(contest_data.keys())
+
+        for contest_name in contest_names:
+            contest = contest_data.get(contest_name)
+
+            selection_names = list(contest.keys())
+
+            for selection_name in selection_names:
+                selection = contest.get(selection_name)
+
+                #get tally data
+                tally = self.contests.get(contest_name).get(
+                        'selections').get(selection_name).get('message')
+
+                if selection.get('pad') != tally.get('pad'):
+                    return False
+                if selection.get('data') != tally.get('data'):
+                    return False
+
+        return True

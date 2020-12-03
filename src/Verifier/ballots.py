@@ -1,5 +1,5 @@
 import glob
-from . import helpers 
+from .helpers import mod_p
 from .read_json import read_json_file
 from .parameters import Parameters
 
@@ -9,10 +9,6 @@ class Ballots():
         self.ballot_path = param.get_root_path() + "encrypted_ballots/"
         self.tally_path = param.get_root_path() + "tally.json"
 
-        self.contest_names_to_order = {} # contest name -> order
-        self.contest_order_to_names = {} # contest order -> name
-
-        self.contest_selections = {} # contest names -> selections (list)
         self.contest_data = {} # all contest data with accum products
 
     def get_accum_contest_dic(self):
@@ -21,10 +17,10 @@ class Ballots():
             self.fill_contest_dic()
         return self.contest_data
 
-    def create_contest_dic():
+    def create_contest_dic(self):
         description = self.param.get_description()
 
-        contest_names = description.get('contests')
+        contests = description.get('contests')
 
         for contest in contests:
             contest_name = contest.get('object_id')
@@ -66,3 +62,13 @@ class Ballots():
         if self.contest_data.get(contest).get(selection).get('pad') == '':
             self.contest_data[contest][selection]['pad'] = pad
         else:
+            term = int(self.contest_data[contest][selection]['pad'])
+            prod = mod_p(term * int(pad))
+            self.contest_data[contest][selection]['pad'] = str(prod)
+
+        if self.contest_data.get(contest).get(selection).get('data') == '':
+            self.contest_data[contest][selection]['data'] = data
+        else:
+            term = int(self.contest_data[contest][selection]['data'])
+            prod = mod_p(term * int(data))
+            self.contest_data[contest][selection]['data'] = str(prod)
