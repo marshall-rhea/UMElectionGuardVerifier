@@ -8,6 +8,7 @@ class Decryptor():
     def __init__(self, param: Parameters, ballots: Ballots):
         self.param = param
         self.ballots = ballots
+        self.contests = param.get_tally.get("contests")
 
     def verify_all_tallies(self):
         """
