@@ -21,13 +21,13 @@ class Decryptor():
 
         #vi in set Zq
 
-        #ai and bi in set Zpr
+        #ai and bi in set Zrp
 
         #ci = H(Q-bar, (A,B), (ai, bi), Mi)
 
         #g ^ vi = ai * (Ki ^ ci) mod p
 
-        #A ^ vi = bi * (Mi ^ ci) mod p 
+        #A ^ vi = bi * (Mi ^ ci) mod p
 
 
         #verify correct decryption by each trustee

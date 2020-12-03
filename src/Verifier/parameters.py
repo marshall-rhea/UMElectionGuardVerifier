@@ -8,6 +8,7 @@ class Parameters():
         self.context = read_json_file(root_path + "context.json")
         self.constants = read_json_file(root_path + "constants.json")
         self.description = read_json_file(root_path + "description.json")
+        self.tally = read_json_file(root_path + "tally.json")
 
     def get_root_path(self):
         """get root path for data folder"""
@@ -24,6 +25,10 @@ class Parameters():
     def get_description(self):
         """get dictionary of election description"""
         return self.description
+
+    def get_tally(self):
+        """get dictionary of election description"""
+        return self.tally
 
     def get_large_prime_p(self):
         """get large prime p"""

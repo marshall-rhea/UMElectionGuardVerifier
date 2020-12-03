@@ -19,5 +19,3 @@ class Ballots():
     def fill_contest_name_order_dics(self):
         """map names to order and order to names"""
 
-    
-        
