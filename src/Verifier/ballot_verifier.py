@@ -2,19 +2,17 @@ import glob
 import read_json
 
 from parameters import Parameters
-from helpers import in_set_Zq, in_set_Zrp
+from helpers import in_set_Zq, in_set_Zrp, mod_q, mod_p, exp_g, exp_K
 
 class BallotVerifier():
     def __init__(self):
         self.Parameters = Parameters()
-        print("q")
 
     def verifyBallot(self,ballot):
         """ Verifies an encrypted ballot """
         for contest in ballot["contests"]:
             verified = self.verifyContest(contest)
             print("Verified =",verified)
-            break
         print(ballot["object_id"])
 
     def verifyContest(self,contest):
@@ -23,12 +21,10 @@ class BallotVerifier():
         for selection in contest["ballot_selections"]:
             verified = self.verifySelection(selection)
             print("Verified =",verified)
-            break
     
     def verifySelection(self,selection):
         """ Verifies a ballot selection is an encryption of either 1 or 0 pursuant to the checks in [step 3] """
         alpha = int(selection.get("ciphertext",{}).get("pad",None))
-        print("alpha:",alpha)
         beta = int(selection.get("ciphertext",{}).get("data",None))
         a0 = int(selection.get("proof",{}).get("proof_zero_pad",None))
         b0 = int(selection.get("proof",{}).get("proof_zero_data",None))
@@ -67,7 +63,21 @@ class BallotVerifier():
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 3","errorMsg": "FAILURE: v1 not in set Zq"})
 
         # Check 4: The equation c = c0 + c1 mod q is satisfied
-        
+        if(not (c == mod_q(int(c0 + c1),self.Parameters))):
+            return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 4","errorMsg": "FAILURE: c = c0 + c1 mod q was NOT satisfied"})
+ 
+        # Check 5: The remaining equations are satisfied
+        if(not (exp_g(v0,self.Parameters,self.Parameters.get_large_prime_p()) == mod_p(int(a0 * pow(alpha,c0,self.Parameters.get_large_prime_p())),self.Parameters))):
+            return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 5","errorMsg": "FAILURE: g^v0 = a0 * alpha^c0 mod p was NOT satisfied"})
+        if(not (exp_g(v1,self.Parameters,self.Parameters.get_large_prime_p()) == mod_p(int(a1 * pow(alpha,c1,self.Parameters.get_large_prime_p())),self.Parameters))):
+            return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 5","errorMsg": "FAILURE: g^v1 = a1 * alpha^c1 mod p was NOT satisfied"})
+        if(not (exp_K(v0,self.Parameters,self.Parameters.get_large_prime_p()) == mod_p(int(b0 * pow(beta,c0,self.Parameters.get_large_prime_p())),self.Parameters))):
+            return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 5","errorMsg": "FAILURE: K^v0 = b0 * beta^c0 mod p was NOT satisfied"})
+        if(not (mod_p(exp_g(c1,self.Parameters,self.Parameters.get_large_prime_p()) * exp_K(v1,self.Parameters,self.Parameters.get_large_prime_p()),self.Parameters) == mod_p(int(b1 * pow(beta,c1,self.Parameters.get_large_prime_p())),self.Parameters))):
+            return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 5","errorMsg": "FAILURE: g^c1 * K^v1 = b1 * beta^c1 mod p was NOT satisfied"})
+
+        # All checks were passed!
+        return (True,{})
 
 if __name__ == "__main__":
     ballots = []
