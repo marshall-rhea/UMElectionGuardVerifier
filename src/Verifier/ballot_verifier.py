@@ -1,12 +1,12 @@
 import glob
-import read_json
+from .read_json import read_json_file
 
-from parameters import Parameters
-from helpers import in_set_Zq, in_set_Zrp, mod_q, mod_p, exp_g, exp_K, hash_elems
+from .parameters import Parameters
+from .helpers import in_set_Zq, in_set_Zrp, mod_q, mod_p, exp_g, exp_K, hash_elems
 
 class BallotVerifier():
-    def __init__(self):
-        self.Parameters = Parameters()
+    def __init__(self, param: Parameters):
+        self.Parameters = param
 
     def verifyBallot(self,ballot):
         """ Verifies an encrypted ballot """
@@ -91,7 +91,7 @@ class BallotVerifier():
             return (False,{"object_id": selection.get("object_id"),"step": "Step 3","check": "Check 1","errorMsg": "FAILURE: b1 not in set Zrp"})
 
         # print("c =",c)
-        # print("hash =",mod_q(hash_elems(self.Parameters.get_extended_base_hash_Qbar(),(alpha,beta),(a0,b0),(a1,b1),param=self.Parameters),self.Parameters))
+        # print("hash =",mod_q(hash_elems(self.param.get_extended_base_hash_Qbar(),(alpha,beta),(a0,b0),(a1,b1),param=self.param),self.param))
 
         # Check 2: The challenge c is correctly computed as c = H(Qbar,(alpha,beta),(a0,b0),(a1,b1))
         # if(not (c == mod_q(hash_elems(self.Parameters.get_extended_base_hash_Qbar(),(alpha,beta),(a0,b0),(a1,b1),param=self.Parameters),self.Parameters))):

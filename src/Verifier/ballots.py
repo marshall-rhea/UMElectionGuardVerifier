@@ -63,12 +63,12 @@ class Ballots():
             self.contest_data[contest][selection]['pad'] = pad
         else:
             term = int(self.contest_data[contest][selection]['pad'])
-            prod = mod_p(term * int(pad))
+            prod = mod_p(term * int(pad), self.param)
             self.contest_data[contest][selection]['pad'] = str(prod)
 
         if self.contest_data.get(contest).get(selection).get('data') == '':
             self.contest_data[contest][selection]['data'] = data
         else:
             term = int(self.contest_data[contest][selection]['data'])
-            prod = mod_p(term * int(data))
+            prod = mod_p(term * int(data), self.param)
             self.contest_data[contest][selection]['data'] = str(prod)

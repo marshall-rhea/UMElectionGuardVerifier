@@ -1,5 +1,5 @@
 import hashlib
-from parameters import Parameters
+from .parameters import Parameters
 from typing import Sequence
 
 def in_set_Zq(num: int, param: Parameters) -> bool:
