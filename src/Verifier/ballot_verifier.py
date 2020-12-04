@@ -2,7 +2,7 @@ import glob
 import read_json
 
 from parameters import Parameters
-from helpers import in_set_Zq, in_set_Zrp, mod_q, mod_p, exp_g, exp_K
+from helpers import in_set_Zq, in_set_Zrp, mod_q, mod_p, exp_g, exp_K, hash_elems
 
 class BallotVerifier():
     def __init__(self):
@@ -50,7 +50,12 @@ class BallotVerifier():
         if(not in_set_Zrp(b1,self.Parameters)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 1","errorMsg": "FAILURE: b1 not in set Zrp"})
 
-        # Check 2: The challenge c is correctly computed as c = H(Qinv,(alpha,beta),(a0,b0),(a1,b1))
+        # print("c =",c)
+        # print("hash =",mod_q(hash_elems(self.Parameters.get_extended_base_hash_Qbar(),(alpha,beta),(a0,b0),(a1,b1),param=self.Parameters),self.Parameters))
+
+        # Check 2: The challenge c is correctly computed as c = H(Qbar,(alpha,beta),(a0,b0),(a1,b1))
+        # if(not (c == mod_q(hash_elems(self.Parameters.get_extended_base_hash_Qbar(),(alpha,beta),(a0,b0),(a1,b1),param=self.Parameters),self.Parameters))):
+        #     return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 2","check": "Check 2","errorMsg": "FAILURE c = H(Qbar,(alpha,beta),(a0,b0),(a1,b1) was NOT satisfied"})
 
         # Check 3: The given values c0, c1, v0, and v1 are each in the set Zq
         if(not in_set_Zq(c0,self.Parameters)):
