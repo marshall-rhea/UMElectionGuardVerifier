@@ -1,12 +1,12 @@
 import glob
-import read_json
+from .read_json import read_json_file
 
-from parameters import Parameters
-from helpers import in_set_Zq, in_set_Zrp, mod_q, mod_p, exp_g, exp_K, hash_elems
+from .parameters import Parameters
+from .helpers import in_set_Zq, in_set_Zrp, mod_q, mod_p, exp_g, exp_K, hash_elems
 
 class BallotVerifier():
-    def __init__(self):
-        self.Parameters = Parameters()
+    def __init__(self, param: Parameters):
+        self.param = param
 
     def verifyBallot(self,ballot):
         """ Verifies an encrypted ballot """
@@ -37,48 +37,48 @@ class BallotVerifier():
         v1 = int(selection.get("proof",{}).get("proof_one_response",None))
 
         # Check 1: The given values alpha, bet, a0, b0, a1, and b1 are each in the set Zrp
-        if(not in_set_Zrp(alpha,self.Parameters)):
+        if(not in_set_Zrp(alpha,self.param)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 1","errorMsg": "FAILURE: alpha not in set Zrp"})
-        if(not in_set_Zrp(beta,self.Parameters)):
+        if(not in_set_Zrp(beta,self.param)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 1","errorMsg": "FAILURE: beta not in set Zrp"})
-        if(not in_set_Zrp(a0,self.Parameters)):
+        if(not in_set_Zrp(a0,self.param)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 1","errorMsg": "FAILURE: a0 not in set Zrp"})
-        if(not in_set_Zrp(b0,self.Parameters)):
+        if(not in_set_Zrp(b0,self.param)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 1","errorMsg": "FAILURE: b0 not in set Zrp"})
-        if(not in_set_Zrp(a1,self.Parameters)):
+        if(not in_set_Zrp(a1,self.param)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 1","errorMsg": "FAILURE: a1 not in set Zrp"})
-        if(not in_set_Zrp(b1,self.Parameters)):
+        if(not in_set_Zrp(b1,self.param)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 1","errorMsg": "FAILURE: b1 not in set Zrp"})
 
         # print("c =",c)
-        # print("hash =",mod_q(hash_elems(self.Parameters.get_extended_base_hash_Qbar(),(alpha,beta),(a0,b0),(a1,b1),param=self.Parameters),self.Parameters))
+        # print("hash =",mod_q(hash_elems(self.param.get_extended_base_hash_Qbar(),(alpha,beta),(a0,b0),(a1,b1),param=self.param),self.param))
 
         # Check 2: The challenge c is correctly computed as c = H(Qbar,(alpha,beta),(a0,b0),(a1,b1))
-        # if(not (c == mod_q(hash_elems(self.Parameters.get_extended_base_hash_Qbar(),(alpha,beta),(a0,b0),(a1,b1),param=self.Parameters),self.Parameters))):
+        # if(not (c == mod_q(hash_elems(self.param.get_extended_base_hash_Qbar(),(alpha,beta),(a0,b0),(a1,b1),param=self.param),self.param))):
         #     return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 2","check": "Check 2","errorMsg": "FAILURE c = H(Qbar,(alpha,beta),(a0,b0),(a1,b1) was NOT satisfied"})
 
         # Check 3: The given values c0, c1, v0, and v1 are each in the set Zq
-        if(not in_set_Zq(c0,self.Parameters)):
+        if(not in_set_Zq(c0,self.param)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 3","errorMsg": "FAILURE: c0 not in set Zq"})
-        if(not in_set_Zq(c1,self.Parameters)):
+        if(not in_set_Zq(c1,self.param)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 3","errorMsg": "FAILURE: c1 not in set Zq"})
-        if(not in_set_Zq(v0,self.Parameters)):
+        if(not in_set_Zq(v0,self.param)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 3","errorMsg": "FAILURE: v0 not in set Zq"})
-        if(not in_set_Zq(v1,self.Parameters)):
+        if(not in_set_Zq(v1,self.param)):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 3","errorMsg": "FAILURE: v1 not in set Zq"})
 
         # Check 4: The equation c = c0 + c1 mod q is satisfied
-        if(not (c == mod_q(int(c0 + c1),self.Parameters))):
+        if(not (c == mod_q(int(c0 + c1),self.param))):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 4","errorMsg": "FAILURE: c = c0 + c1 mod q was NOT satisfied"})
  
         # Check 5: The remaining equations are satisfied
-        if(not (exp_g(v0,self.Parameters,self.Parameters.get_large_prime_p()) == mod_p(int(a0 * pow(alpha,c0,self.Parameters.get_large_prime_p())),self.Parameters))):
+        if(not (exp_g(v0,self.param,self.param.get_large_prime_p()) == mod_p(int(a0 * pow(alpha,c0,self.param.get_large_prime_p())),self.param))):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 5","errorMsg": "FAILURE: g^v0 = a0 * alpha^c0 mod p was NOT satisfied"})
-        if(not (exp_g(v1,self.Parameters,self.Parameters.get_large_prime_p()) == mod_p(int(a1 * pow(alpha,c1,self.Parameters.get_large_prime_p())),self.Parameters))):
+        if(not (exp_g(v1,self.param,self.param.get_large_prime_p()) == mod_p(int(a1 * pow(alpha,c1,self.param.get_large_prime_p())),self.param))):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 5","errorMsg": "FAILURE: g^v1 = a1 * alpha^c1 mod p was NOT satisfied"})
-        if(not (exp_K(v0,self.Parameters,self.Parameters.get_large_prime_p()) == mod_p(int(b0 * pow(beta,c0,self.Parameters.get_large_prime_p())),self.Parameters))):
+        if(not (exp_K(v0,self.param,self.param.get_large_prime_p()) == mod_p(int(b0 * pow(beta,c0,self.param.get_large_prime_p())),self.param))):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 5","errorMsg": "FAILURE: K^v0 = b0 * beta^c0 mod p was NOT satisfied"})
-        if(not (mod_p(exp_g(c1,self.Parameters,self.Parameters.get_large_prime_p()) * exp_K(v1,self.Parameters,self.Parameters.get_large_prime_p()),self.Parameters) == mod_p(int(b1 * pow(beta,c1,self.Parameters.get_large_prime_p())),self.Parameters))):
+        if(not (mod_p(exp_g(c1,self.param,self.param.get_large_prime_p()) * exp_K(v1,self.param,self.param.get_large_prime_p()),self.param) == mod_p(int(b1 * pow(beta,c1,self.param.get_large_prime_p())),self.param))):
             return (False,{"selection_object_id": selection.get("object_id"),"step": "Step 3","check": "Check 5","errorMsg": "FAILURE: g^c1 * K^v1 = b1 * beta^c1 mod p was NOT satisfied"})
 
         # All checks were passed!
