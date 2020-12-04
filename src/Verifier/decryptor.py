@@ -8,7 +8,7 @@ class Decryptor():
     def __init__(self, param: Parameters, ballots: Ballots):
         self.param = param
         self.ballots = ballots
-        self.contests = param.get_tally.get("contests")
+        self.contests = param.get_tally().get("contests")
 
     def verify_all_tallies(self):
         """
@@ -17,7 +17,7 @@ class Decryptor():
         """
 
         #check ballot tallies match cumulative products
-        self.verfy_accum_prod()
+        return self.verfy_accum_prod()
 
         #check equations
 
@@ -60,3 +60,11 @@ class Decryptor():
                     return False
 
         return True
+
+
+if __name__ == "__main__":
+    param = Parameters()
+    ballots = Ballots(param)
+    dv = Decryptor(param, ballots)
+    val = dv.verify_all_tallies()
+    print(val)
