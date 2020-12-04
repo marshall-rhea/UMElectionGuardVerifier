@@ -8,7 +8,7 @@ def in_set_Zq(num: int, param: Parameters) -> bool:
 def in_set_Zrp(num: int, param: Parameters) -> bool:
     q = param.get_small_prime_q()
     p = param.get_large_prime_p()
-    
+
     return 0 <= num < p and int(pow(num, q, p)) == 1
 
 def mod_q(num: int, param: Parameters) -> int:
