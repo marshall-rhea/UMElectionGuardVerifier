@@ -126,12 +126,12 @@ class BallotVerifier():
 
 if __name__ == "__main__":
     ballots = []
-    for filename in glob.iglob("../../data/encrypted_ballots/*"):
-        ballot = read_json.read_json_file(filename)
+    for filename in glob.iglob("../data/encrypted_ballots/*"):
+        ballot = read_json_file(filename)
         if ballot:
             ballots.append(ballot)
     if len(ballots) > 0:
-        ballot_verifier = BallotVerifier()
+        ballot_verifier = BallotVerifier(Parameters())
         ballot_verifier.verifyBallot(ballots[0])
     
     
