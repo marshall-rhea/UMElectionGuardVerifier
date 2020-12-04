@@ -22,6 +22,8 @@ class Decryptor():
         #check equations
 
         #vi in set Zq
+        #Check 0 < vi < q
+
 
         #ai and bi in set Zrp
 
@@ -59,6 +61,26 @@ class Decryptor():
                 if selection.get('data') != tally.get('data'):
                     return False
 
+        return True
+
+    def verfy_Zq(self) -> bool:
+        """verify vi of ballot is in the set Zq"""
+        contest_data = self.ballots.get_accum_contest_dic()
+
+        contest_names = list(contest_data.keys())
+
+        for contest_name in contest_names:
+            contest = contest_data.get(contest_name)
+
+            selection_names = list(contest.keys())
+
+            for selection_name in selection_names:
+                selection = contest.get(selection_name)
+                shares = selection.get("shares")
+                for share in shares:
+                    response = share.get("proof").get("response")
+                    if int(response) < 0 or int(response) > param.get_context().get("small_prime"):
+                        return False
         return True
 
 
