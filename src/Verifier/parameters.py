@@ -58,6 +58,10 @@ class Parameters():
         """get base hash value Q"""
         return int(self.get_context().get('crypto_base_hash'))
 
+    def get_extended_base_hash_Qbar(self):
+        """get extended base hash value Q-bar"""
+        return int(self.get_context().get('crypto_extended_base_hash'))
+
     def get_joint_election_public_key_K(self):
         """get joint election public key K"""
         return int(self.get_context().get('elgamal_public_key'))
