@@ -9,6 +9,7 @@ class Parameters():
         self.constants = read_json_file(root_path + "constants.json")
         self.description = read_json_file(root_path + "description.json")
         self.tally = read_json_file(root_path + "tally.json")
+        self.encrypted_ballots = []
 
     def get_root_path(self):
         """get root path for data folder"""
@@ -29,6 +30,17 @@ class Parameters():
     def get_tally(self):
         """get dictionary of election description"""
         return self.tally
+
+    def get_encrypted_ballots(self):
+        if len(self.encrypted_ballots) == 0:
+            self.find_encrypted_ballots()
+        return self.encrypted_ballots
+
+    def find_encrypted_ballots(self):
+        ballot_path = self.get_root_path() + "encrypted_ballots/"
+
+        for ballot_f_name in glob.glob(ballot_path + '*.json'):
+            self.encrypted_ballots.append(read_json_file(ballot_f_name))
 
     def get_large_prime_p(self):
         """get large prime p"""

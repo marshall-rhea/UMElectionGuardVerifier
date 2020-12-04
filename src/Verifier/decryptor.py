@@ -33,7 +33,6 @@ class Decryptor():
 
         #A ^ vi = bi * (Mi ^ ci) mod p
 
-
         #verify correct decryption by each trustee
         #B = M (∏ Mi) mod p
         #M = (g ^ t) mod p
@@ -63,25 +62,46 @@ class Decryptor():
 
         return True
 
-    def verfy_Zq(self) -> bool:
-        """verify vi of ballot is in the set Zq"""
-        contest_data = self.ballots.get_accum_contest_dic()
+    def access_all_shares(self) -> bool:
+        """access all ballot shares to do checking equations"""
 
-        contest_names = list(contest_data.keys())
+        contest_names = list(self.contests.keys())
 
         for contest_name in contest_names:
-            contest = contest_data.get(contest_name)
+            contest = self.contests.get(contest_name)
 
-            selection_names = list(contest.keys())
+            selections = contest.get("selections")
+
+            selection_names = list(selections.keys())
 
             for selection_name in selection_names:
-                selection = contest.get(selection_name)
+                selection = selections.get(selection_name)
                 shares = selection.get("shares")
+                pad = selection.get("pad")
+                data = selection.get("data")
+
                 for share in shares:
-                    response = share.get("proof").get("response")
-                    if int(response) < 0 or int(response) > param.get_context().get("small_prime"):
+                    val = self.share_verifier(share, pad, data)
+                    if not val:
                         return False
         return True
+
+    def share_verifier(self, share, pad, data):
+        """check all equations for a share"""
+        #vi in set Zq
+
+        #ai bi in Zrp
+
+        #ci = H(Q-bar, (A,B), (ai, bi), Mi)
+
+        #g ^ vi = ai * (Ki ^ ci) mod p
+
+        #A ^ vi = bi * (Mi ^ ci) mod p
+
+        return True
+
+
+
 
 
 if __name__ == "__main__":
