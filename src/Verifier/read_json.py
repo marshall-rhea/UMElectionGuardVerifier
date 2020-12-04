@@ -6,4 +6,5 @@ def read_json_file(filename: str):
             json_dict = json.load(f)
         return json_dict
     except FileNotFoundError:
-        print("File does not exist")
+        print("Could not load file",filename)
+    return None
