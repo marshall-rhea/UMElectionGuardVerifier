@@ -65,3 +65,11 @@ class Parameters():
     def get_joint_election_public_key_K(self):
         """get joint election public key K"""
         return int(self.get_context().get('elgamal_public_key'))
+
+    def get_contest_selection_limit_L(self,contest_id):
+        """get the contest selection limit L"""
+        contests = self.get_description().get("contests",[])
+        for contest in contests:
+            if(contest["object_id"] == contest_id):
+                return int(contest["votes_allowed"])
+        return int(0)
