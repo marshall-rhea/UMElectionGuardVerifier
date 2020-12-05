@@ -1,7 +1,7 @@
 from .read_json import read_json_file
 from .parameters import Parameters
 from .ballots import Ballots
-from . import helpers as hlp
+from .helpers import mod_p
 
 
 class Decryptor():
@@ -17,7 +17,10 @@ class Decryptor():
         """
 
         #check ballot tallies match cumulative products
-        return self.verfy_accum_prod()
+        ballot_agg = self.verfy_accum_prod()
+
+        if not ballot_agg:
+            return ballot_agg
 
         #check equations
 
@@ -36,6 +39,8 @@ class Decryptor():
         #verify correct decryption by each trustee
         #B = M (∏ Mi) mod p
         #M = (g ^ t) mod p
+
+        return self.access_all_shares()
 
     def verfy_accum_prod(self) -> bool:
         """verify accum prod of ballot data matches tally"""
@@ -84,6 +89,15 @@ class Decryptor():
                     val = self.share_verifier(share, pad, data)
                     if not val:
                         return False
+
+                #verify correct decryption by each trustee
+                #B = M (∏ Mi) mod p
+                #M = (g ^ t) mod p
+                
+                val = self.validate_correct_decryption(selection)
+                if not val:
+                        return False
+
         return True
 
     def share_verifier(self, share, pad, data):
@@ -100,8 +114,58 @@ class Decryptor():
 
         return True
 
+    def validate_correct_decryption(self, selection):
+        """verify that partial decryptions form the full decryption"""
+        # Assert the following formulas
+        #B = M (∏ Mi) mod p
+        #M = (g ^ t) mod p
 
+        eq1 = self.check_box_9_eq_1(selection)
+        eq2 = self.check_box_9_eq_2(selection)
 
+        if not eq1:
+            return eq1
+        if not eq2:
+            return eq2
+
+        return True
+
+    def check_box_9_eq_1(self, selection):
+        """assert B = M (∏ Mi) mod p"""
+        shares = selection.get("shares")
+        value = int(selection.get("value")) # M
+        data = int(selection.get("message").get("data")) # B
+
+        accum_share = None
+
+        # (∏ Mi)
+        for share in shares:
+            Mi = int(share.get("share"))
+
+            if accum_share is None:
+                accum_share = Mi
+            else:
+                accum_share = Mi * accum_share
+        
+        right = mod_p(value * accum_share, param)
+
+        if data != right:
+            return False # Failed B = M (∏ Mi) mod p
+
+        return True # Passed B = M (∏ Mi) mod p
+
+    def check_box_9_eq_2(self, selection):
+        """Assert M = (g ^ t) mod p"""
+        value = int(selection.get("value")) # M
+        tally = selection.get("tally") # t
+        g = param.get_generator_g()
+
+        right = mod_p(pow(g, tally), param)
+
+        if value != right:
+            return False # Failed M = (g ^ t) mod p
+
+        return True # Passed M = (g ^ t) mod p
 
 
 if __name__ == "__main__":
