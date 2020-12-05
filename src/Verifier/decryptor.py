@@ -1,7 +1,7 @@
 from .read_json import read_json_file
 from .parameters import Parameters
 from .ballots import Ballots
-from .helpers import mod_p
+from .helpers import mod_p, in_set_Zq, in_set_Zrp, hash_elems, exp_g
 
 
 class Decryptor():
@@ -103,15 +103,38 @@ class Decryptor():
     def share_verifier(self, share, pad, data):
         """check all equations for a share"""
         #vi in set Zq
-
+        response = int(share.get("proof").get("response"))
+        Zq_check = in_set_Zq(response,self.param)
+        if not Zq_check:
+            return False
         #ai bi in Zrp
-
+        proof_pad = int(share.get("proof").get("pad"))
+        proof_data = int(share.get("proof").get("data"))
+        item_share = int(share.get("share"))
+        Zrp_check_a = in_set_Zrp(proof_data, self.param)
+        Zrp_check_b = in_set_Zrp(proof_pad, self.param)
+        if not Zrp_check_a:
+            return False
+        if not Zrp_check_b:
+            return False
         #ci = H(Q-bar, (A,B), (ai, bi), Mi)
-
+        Q_bar = self.param.get_extended_base_hash_Qbar()
+        challenge = int(share.get("proof").get("challenge"))
+        hash_val = hash_elems(*(Q_bar, pad, data, proof_pad, proof_data, item_share), self.param)
+        if challenge != hash_val:
+            return False
         #g ^ vi = ai * (Ki ^ ci) mod p
-
+        g_vi = mod_p(exp_g(response, self.param), self.param)
+        # TODO Need to extract K_i fro  coefficients folder
+        # ki_ci = mod_p(proof_pad * pow( , challenge), self.param)
+        if g_vi != ki_ci:
+            return False
+        return True
         #A ^ vi = bi * (Mi ^ ci) mod p
-
+        A_vi = mod_p(exp_g(pad, self.param), self.param)
+        Mi_ci = mod_p(proof_data * pow(share, challenge), self.param)
+        if A_vi != Mi_ci:
+            return False
         return True
 
     def validate_correct_decryption(self, selection):
