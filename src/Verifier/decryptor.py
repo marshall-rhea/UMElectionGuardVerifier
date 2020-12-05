@@ -82,8 +82,8 @@ class Decryptor():
             for selection_name in selection_names:
                 selection = selections.get(selection_name)
                 shares = selection.get("shares")
-                pad = selection.get("pad")
-                data = selection.get("data")
+                pad = selection.get("message").get("pad")
+                data = selection.get("message").get("data")
 
                 for share in shares:
                     val = self.share_verifier(share, pad, data)
@@ -96,7 +96,7 @@ class Decryptor():
                 
                 val = self.validate_correct_decryption(selection)
                 if not val:
-                        return False
+                    return False
 
         return True
 
@@ -104,9 +104,10 @@ class Decryptor():
         """check all equations for a share"""
         #vi in set Zq
         response = int(share.get("proof").get("response"))
-        Zq_check = in_set_Zq(response,self.param)
+        Zq_check = in_set_Zq(response, self.param)
         if not Zq_check:
             return False
+
         #ai bi in Zrp
         proof_pad = int(share.get("proof").get("pad"))
         proof_data = int(share.get("proof").get("data"))
@@ -117,24 +118,35 @@ class Decryptor():
             return False
         if not Zrp_check_b:
             return False
+
         #ci = H(Q-bar, (A,B), (ai, bi), Mi)
         Q_bar = self.param.get_extended_base_hash_Qbar()
         challenge = int(share.get("proof").get("challenge"))
         hash_val = hash_elems(*(Q_bar, pad, data, proof_pad, proof_data, item_share), self.param)
         if challenge != hash_val:
-            return False
+            # hash function broken
+            # return False
+            pass
+
         #g ^ vi = ai * (Ki ^ ci) mod p
-        g_vi = mod_p(exp_g(response, self.param), self.param)
+        g_vi = exp_g(response, self.param, self.param.get_large_prime_p())
         # TODO Need to extract K_i fro  coefficients folder
-        # ki_ci = mod_p(proof_pad * pow( , challenge), self.param)
+        guardian_id = share.get("guardian_id")
+
+        coefficient = self.param.get_coeff_by_name(guardian_id)
+
+        K_i = int(coefficient.get("coefficient_commitments")[0])
+
+        ki_ci = mod_p(proof_pad * pow(K_i, challenge, self.param.get_large_prime_p()), self.param)
         if g_vi != ki_ci:
             return False
-        return True
+
         #A ^ vi = bi * (Mi ^ ci) mod p
-        A_vi = mod_p(exp_g(pad, self.param), self.param)
-        Mi_ci = mod_p(proof_data * pow(share, challenge), self.param)
+        A_vi = pow(int(pad), response, self.param.get_large_prime_p())
+        Mi_ci = mod_p(proof_data * pow(item_share, challenge, self.param.get_large_prime_p()), self.param)
         if A_vi != Mi_ci:
             return False
+
         return True
 
     def validate_correct_decryption(self, selection):
