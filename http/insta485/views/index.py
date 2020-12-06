@@ -17,7 +17,7 @@ import insta485
 def show_index():
     """Display / route."""
     if flask.request.method == "POST":
-        # Upload format ??? Fetch content
+        flask.session["upload"] = flask.request.form["url"]
         return flask.redirect(flask.url_for("verified"))
 
     return flask.render_template("upload.html")
@@ -28,6 +28,6 @@ def show_index():
 def verified():
     """Display /verified/ route."""
     # Insert verifier API here and pass result to context
-    context = {}
+    context = {"upload": flask.session["upload"]}
 
     return flask.render_template("verify.html", **context)
