@@ -39,8 +39,7 @@ class Ballots():
 
     def fill_contest_dic(self):
         """fill ballot dictionaries"""
-        for ballot_f_name in glob.glob(self.ballot_path + '*.json'):
-            ballot = read_json_file(ballot_f_name)
+        for ballot in self.param.get_encrypted_ballots():
 
             if ballot.get('state') == 'CAST':
 
