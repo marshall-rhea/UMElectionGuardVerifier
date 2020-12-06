@@ -63,8 +63,8 @@ class BallotVerifier():
             return (False, {"object_id": contest.get("object_id"),"step": "Step 4", "check": "Check 4", "errorMsg": "FAIRLURE: b not in set Zrp"})
         
         # Check 5: The challenge value C is correctly computed as C = H(Qbar,(A,B),(a,b))
-        #if C != hash_elems(self.param, self.param.get_extended_base_hash_Qbar(), A, B, a, b):
-        #    return (False,{"object_id": contest.get("object_id"),"step": "Step 4", "check": "Check 5", "errorMsg": "FAILURE: C = H(Qbar,(A,B),(a,b)) is not satisfied"})
+        if C != hash_elems(self.param, self.param.get_extended_base_hash_Qbar(), A, B, a, b):
+           return (False,{"object_id": contest.get("object_id"),"step": "Step 4", "check": "Check 5", "errorMsg": "FAILURE: C = H(Qbar,(A,B),(a,b)) is not satisfied"})
 
         # Check 6: The equations g^V = a * A^C mod p and g^(LC) * K^V = b * B^C mod p are satisfied
         left = exp_g(V,self.param,self.param.get_large_prime_p())
@@ -110,9 +110,6 @@ class BallotVerifier():
 
         # Check 2: The challenge c is correctly computed as c = H(Qbar,(alpha,beta),(a0,b0),(a1,b1))
         if not c == hash_val:
-            print(c)
-            print(hash_val)
-            
             return (False,{"object_id": selection.get("object_id"),"step": "Step 2","check": "Check 2","errorMsg": "FAILURE c = H(Qbar,(alpha,beta),(a0,b0),(a1,b1) was NOT satisfied"})
 
         # Check 3: The given values c0, c1, v0, and v1 are each in the set Zq
@@ -143,9 +140,7 @@ class BallotVerifier():
         return (True,{"alpha": alpha, "beta": beta})
 
 if __name__ == "__main__":
-    param = Parameters(root_path="../reults/")
+    param = Parameters(root_path="../results/")
     bv = BallotVerifier(param)
     val = bv.verify_all_ballots()
     print(val)
-    
-    

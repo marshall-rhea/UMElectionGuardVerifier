@@ -42,7 +42,7 @@ def hash_elems(param: Parameters, *a) -> int:
     """
     h = sha256()
     h.update("|".encode("utf-8"))
-    print(int.from_bytes(h.digest(), byteorder="big") % (param.get_small_prime_q() - 1))
+    
     for x in a:
         if not x:
             # This case captures empty lists and None, nicely guaranteeing that we don't
@@ -61,9 +61,6 @@ def hash_elems(param: Parameters, *a) -> int:
             hash_me = str(to_hex(mod_p(int(x), param)))
 
         h.update((hash_me + "|").encode("utf-8"))
-
-        print("to hash: " + hash_me)
-        print(int.from_bytes(h.digest(), byteorder="big") % (param.get_small_prime_q() - 1))
 
     # Note: the returned value will range from [1,Q), because zeros are bad
     # for some of the nonces. (g^0 == 1, which would be an unhelpful thing
