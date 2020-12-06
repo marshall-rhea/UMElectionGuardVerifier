@@ -8,6 +8,11 @@ class BallotVerifier():
     def __init__(self, param: Parameters):
         self.Parameters = param
 
+    def verifyElection(self):
+        self.Parameters.find_encrypted_ballots()
+        for ballot in self.Parameters.get_encrypted_ballots():
+            self.verifyBallot(ballot)
+
     def verifyBallot(self,ballot):
         """ Verifies an encrypted ballot """
         for contest in ballot["contests"]:
@@ -125,13 +130,16 @@ class BallotVerifier():
         return (True,{"alpha": alpha, "beta": beta})
 
 if __name__ == "__main__":
-    ballots = []
-    for filename in glob.iglob("../data/encrypted_ballots/*"):
-        ballot = read_json_file(filename)
-        if ballot:
-            ballots.append(ballot)
-    if len(ballots) > 0:
-        ballot_verifier = BallotVerifier(Parameters())
-        ballot_verifier.verifyBallot(ballots[0])
+    #ballots = []
+    #for filename in glob.iglob("../data/encrypted_ballots/*"):
+    #    ballot = read_json_file(filename)
+    #    if ballot:
+    #        ballots.append(ballot)
+    #if len(ballots) > 0:
+    #    ballot_verifier = BallotVerifier(Parameters())
+    #    ballot_verifier.verifyBallot(ballots[0])
+    params = Parameters()
+    ev = BallotVerifier(params)
+    ev.verifyElection()
     
     
