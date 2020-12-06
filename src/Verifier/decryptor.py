@@ -122,11 +122,14 @@ class Decryptor():
         #ci = H(Q-bar, (A,B), (ai, bi), Mi)
         Q_bar = self.param.get_extended_base_hash_Qbar()
         challenge = int(share.get("proof").get("challenge"))
-        hash_val = hash_elems(*(Q_bar, pad, data, proof_pad, proof_data, item_share), self.param)
+
+        hash_val = hash_elems(self.param, str(Q_bar), pad, data, str(proof_pad), 
+                              str(proof_data), str(item_share))
+        
         if challenge != hash_val:
-            # hash function broken
-            # return False
-            pass
+            print(hash_val)
+            print(challenge)
+            return False
 
         #g ^ vi = ai * (Ki ^ ci) mod p
         g_vi = exp_g(response, self.param, self.param.get_large_prime_p())
@@ -204,7 +207,7 @@ class Decryptor():
 
 
 if __name__ == "__main__":
-    param = Parameters()
+    param = Parameters(root_path="../results/")
     ballots = Ballots(param)
     dv = Decryptor(param, ballots)
     val = dv.verify_all_tallies()

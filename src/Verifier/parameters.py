@@ -2,7 +2,7 @@ import glob
 from .read_json import read_json_file
 
 class Parameters():
-    def __init__(self, root_path="../data/"):
+    def __init__(self, root_path="../results/"):
         """inititalize parameters with default path ../../data/"""
         self.root_path = root_path
         self.context = read_json_file(root_path + "context.json")

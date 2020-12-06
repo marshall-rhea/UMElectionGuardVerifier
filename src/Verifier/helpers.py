@@ -1,4 +1,4 @@
-import hashlib
+from hashlib import sha256
 from .parameters import Parameters
 from typing import Sequence
 
@@ -28,17 +28,22 @@ def exp_g(num: int, param: Parameters, mod=0) -> int:
 def exp_K(num: int, param: Parameters, mod=0) -> int:
     return pow(param.get_joint_election_public_key_K(),num,mod) if mod else pow(param.get_joint_election_public_key_K(),num)
 
-def hash_elems(*a,param=Parameters()) -> int:
+def to_hex(num: int):
+    h = format(num, "02X")
+    if len(h) % 2:
+        h = "0" + h
+    return h
+
+def hash_elems(param: Parameters, *a) -> int:
     """
     main hash function using SHA-256, used in generating data, reference:
     :param a: elements being fed into the hash function
     :return: a hash number of 256 bit
     """
-    h = hashlib.sha256()
+    h = sha256()
     h.update("|".encode("utf-8"))
-
+    print(int.from_bytes(h.digest(), byteorder="big") % (param.get_small_prime_q() - 1))
     for x in a:
-
         if not x:
             # This case captures empty lists and None, nicely guaranteeing that we don't
             # need to do a recursive call if the list is empty. So we need a string to
@@ -48,13 +53,17 @@ def hash_elems(*a,param=Parameters()) -> int:
 
         elif isinstance(x, str):
             # strings are iterable, so it's important to handle them before the following check
-            hash_me = x
+            hash_me = str(to_hex(mod_p(int(x), param)))
         elif isinstance(x, Sequence):
             # The simplest way to deal with lists, tuples, and such are to crunch them recursively.
-            hash_me = str(hash_elems(*x,param=param))
+            hash_me = str(hash_elems(param, *x))
         else:
-            hash_me = str(x)
+            hash_me = str(to_hex(mod_p(int(x), param)))
+
         h.update((hash_me + "|").encode("utf-8"))
+
+        print("to hash: " + hash_me)
+        print(int.from_bytes(h.digest(), byteorder="big") % (param.get_small_prime_q() - 1))
 
     # Note: the returned value will range from [1,Q), because zeros are bad
     # for some of the nonces. (g^0 == 1, which would be an unhelpful thing
