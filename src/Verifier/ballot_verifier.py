@@ -9,14 +9,12 @@ class BallotVerifier():
         self.param = param
 
     def verify_all_ballots(self):
-        all_verif = (True, {})
-        for ballot in param.get_encrypted_ballots():
+        for ballot in self.param.get_encrypted_ballots():
             verified = self.verifyBallot(ballot)
             if not verified[0]:
-                all_verif = verified
+                return verified
 
-        return all_verif
-
+        return (True,{})
 
 
     def verifyElection(self):
@@ -26,15 +24,14 @@ class BallotVerifier():
 
     def verifyBallot(self,ballot):
         """ Verifies an encrypted ballot """
-        ballot_verif = (True, {})
         for contest in ballot["contests"]:
             verified = self.verifyContest(contest)
             if not verified[0]:
-                ballot_verif = verified
-            print("Verified =",verified)
-        print(ballot["object_id"])
+                return verified
+            #print("Verified =",verified)
+        #print(ballot["object_id"])
 
-        return ballot_verif
+        return (True,{})
 
     def verifyContest(self,contest):
         """ Verifies a contest by checking that each selection in a contest is an encryption of either 1 or 0
@@ -144,8 +141,8 @@ class BallotVerifier():
         # All checks were passed! The selection is valid so return the information needed from this selection to check the entire contest
         return (True,{"alpha": alpha, "beta": beta})
 
-if __name__ == "__main__":
-    param = Parameters(root_path="../results/")
-    bv = BallotVerifier(param)
-    val = bv.verify_all_ballots()
-    print(val)
+#if __name__ == "__main__":
+#    param = Parameters(root_path="../results/")
+#    bv = BallotVerifier(param)
+#    val = bv.verify_all_ballots()
+#    print(val)

@@ -182,7 +182,7 @@ class Decryptor():
             else:
                 accum_share = Mi * accum_share
         
-        right = mod_p(value * accum_share, param)
+        right = mod_p(value * accum_share, self.param)
 
         if data != right:
             return False # Failed B = M (∏ Mi) mod p
@@ -193,9 +193,9 @@ class Decryptor():
         """Assert M = (g ^ t) mod p"""
         value = int(selection.get("value")) # M
         tally = selection.get("tally") # t
-        g = param.get_generator_g()
+        g = self.param.get_generator_g()
 
-        right = mod_p(pow(g, tally), param)
+        right = mod_p(pow(g, tally), self.param)
 
         if value != right:
             return False # Failed M = (g ^ t) mod p
@@ -203,9 +203,9 @@ class Decryptor():
         return True # Passed M = (g ^ t) mod p
 
 
-if __name__ == "__main__":
-    param = Parameters(root_path="../results/")
-    ballots = Ballots(param)
-    dv = Decryptor(param, ballots)
-    val = dv.verify_all_tallies()
-    print(val)
+#if __name__ == "__main__":
+#    param = Parameters(root_path="../results/")
+#    ballots = Ballots(param)
+#    dv = Decryptor(param, ballots)
+#    val = dv.verify_all_tallies()
+#    print(val)
