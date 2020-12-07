@@ -19,7 +19,7 @@ class Decryptor():
         #check ballot tallies match cumulative products
         ballot_agg = self.verfy_accum_prod()
 
-        if not ballot_agg:
+        if not ballot_agg[0]:
             return ballot_agg
 
         #check equations
@@ -61,13 +61,13 @@ class Decryptor():
                         'selections').get(selection_name).get('message')
 
                 if selection.get('pad') != tally.get('pad'):
-                    return False
+                    return False, {"object_id": contest_name,"step": "Step 6", "check": "Accum Prod", "errorMsg": "FAIRLURE: product of pad encryptions does not match tally"}
                 if selection.get('data') != tally.get('data'):
-                    return False
+                    return False, {"object_id": contest_name,"step": "Step 6", "check": "Accum Prod", "errorMsg": "FAIRLURE: product of data encryptions does not match tally"}
 
-        return True
+        return True, {}
 
-    def access_all_shares(self) -> bool:
+    def access_all_shares(self):
         """access all ballot shares to do checking equations"""
 
         contest_names = list(self.contests.keys())
@@ -87,18 +87,18 @@ class Decryptor():
 
                 for share in shares:
                     val = self.share_verifier(share, pad, data)
-                    if not val:
-                        return False
+                    if not val[0]:
+                        return val
 
                 #verify correct decryption by each trustee
                 #B = M (∏ Mi) mod p
                 #M = (g ^ t) mod p
                 
                 val = self.validate_correct_decryption(selection)
-                if not val:
-                    return False
+                if not val[0]:
+                    return val
 
-        return True
+        return True, {}
 
     def share_verifier(self, share, pad, data):
         """check all equations for a share"""
@@ -106,7 +106,7 @@ class Decryptor():
         response = int(share.get("proof").get("response"))
         Zq_check = in_set_Zq(response, self.param)
         if not Zq_check:
-            return False
+            return False, {"object_id": share.get('object_id'),"step": "Step 6", "check": "Zq check", "errorMsg": "FAIRLURE: Failed vi in set Zq"}
 
         #ai bi in Zrp
         proof_pad = int(share.get("proof").get("pad"))
@@ -115,22 +115,22 @@ class Decryptor():
         Zrp_check_a = in_set_Zrp(proof_data, self.param)
         Zrp_check_b = in_set_Zrp(proof_pad, self.param)
         if not Zrp_check_a:
-            return False
+            return False, {"object_id": share.get('object_id'),"step": "Step 6", "check": "Zrp check", "errorMsg": "FAIRLURE: Failed ai in Zrp"}
         if not Zrp_check_b:
-            return False
+            return False, {"object_id": share.get('object_id'),"step": "Step 6", "check": "Zrp check", "errorMsg": "FAIRLURE: Failed bi in Zrp"}
 
         #ci = H(Q-bar, (A,B), (ai, bi), Mi)
         Q_bar = self.param.get_extended_base_hash_Qbar()
         challenge = int(share.get("proof").get("challenge"))
-        hash_val = hash_elems(*(Q_bar, pad, data, proof_pad, proof_data, item_share), self.param)
+
+        hash_val = hash_elems(self.param, str(Q_bar), pad, data, str(proof_pad), 
+                              str(proof_data), str(item_share))
+        
         if challenge != hash_val:
-            # hash function broken
-            # return False
-            pass
+            return False, {"object_id": share.get('object_id'),"step": "Step 6", "check": "Challenge check", "errorMsg": "FAIRLURE: Failed ci = H(Q-bar, (A,B), (ai, bi), Mi)"}
 
         #g ^ vi = ai * (Ki ^ ci) mod p
         g_vi = exp_g(response, self.param, self.param.get_large_prime_p())
-        # TODO Need to extract K_i fro  coefficients folder
         guardian_id = share.get("guardian_id")
 
         coefficient = self.param.get_coeff_by_name(guardian_id)
@@ -139,15 +139,15 @@ class Decryptor():
 
         ki_ci = mod_p(proof_pad * pow(K_i, challenge, self.param.get_large_prime_p()), self.param)
         if g_vi != ki_ci:
-            return False
+            return False, {"object_id": share.get('object_id'),"step": "Step 6", "check": "gvi check", "errorMsg": "FAIRLURE: Failed g ^ vi = ai * (Ki ^ ci) mod p"}
 
         #A ^ vi = bi * (Mi ^ ci) mod p
         A_vi = pow(int(pad), response, self.param.get_large_prime_p())
         Mi_ci = mod_p(proof_data * pow(item_share, challenge, self.param.get_large_prime_p()), self.param)
         if A_vi != Mi_ci:
-            return False
+            return False, {"object_id": share.get('object_id'),"step": "Step 6", "check": "Avi check", "errorMsg": "FAIRLURE: Failed A ^ vi = bi * (Mi ^ ci) mod p"}
 
-        return True
+        return True, {}
 
     def validate_correct_decryption(self, selection):
         """verify that partial decryptions form the full decryption"""
@@ -159,11 +159,11 @@ class Decryptor():
         eq2 = self.check_box_9_eq_2(selection)
 
         if not eq1:
-            return eq1
+            return eq1, {"object_id": selection.get('object_id'),"step": "Step 9", "check": "Equation 1", "errorMsg": "FAIRLURE: Failed B = M (∏ Mi) mod p"}
         if not eq2:
-            return eq2
+            return eq2, {"object_id": selection.get('object_id'),"step": "Step 9", "check": "Equation 2", "errorMsg": "FAIRLURE: Failed M = (g ^ t) mod p"}
 
-        return True
+        return True, {}
 
     def check_box_9_eq_1(self, selection):
         """assert B = M (∏ Mi) mod p"""
@@ -204,7 +204,7 @@ class Decryptor():
 
 
 if __name__ == "__main__":
-    param = Parameters()
+    param = Parameters(root_path="../results/")
     ballots = Ballots(param)
     dv = Decryptor(param, ballots)
     val = dv.verify_all_tallies()
