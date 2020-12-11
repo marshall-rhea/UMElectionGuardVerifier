@@ -2,8 +2,13 @@ import glob
 from .read_json import read_json_file
 
 class Parameters():
+    """
+    This class provides access to dictionaries created from all files in the ElectionGuard dataset.
+    Can be initialized with any root directory and retrieves files based on the root path
+    """
+
     def __init__(self, root_path="../results/"):
-        """inititalize parameters with default path ../../data/"""
+        """inititalize parameters with default path ../results/"""
         self.root_path = root_path
         self.context = read_json_file(root_path + "context.json")
         self.constants = read_json_file(root_path + "constants.json")
@@ -34,28 +39,33 @@ class Parameters():
         return self.tally
 
     def get_encrypted_ballots(self):
+        """get list of all encryoted ballot dictionaries."""
         if len(self.encrypted_ballots) == 0:
             self.find_encrypted_ballots()
         return self.encrypted_ballots
 
     def find_encrypted_ballots(self):
+        """fill list of ballot dictionaries by iterating over encrypted ballots folder"""
         ballot_path = self.get_root_path() + "encrypted_ballots/"
 
         for ballot_f_name in glob.glob(ballot_path + '*.json'):
             self.encrypted_ballots.append(read_json_file(ballot_f_name))
 
     def get_coefficient_files(self):
+        """get list of all coefficient dictionaries."""
         if len(self.coefficient_dics) == 0:
             self.find_coefficient_dics()
         return self.coefficient_dics
 
     def find_coefficient_dics(self):
+        """fill list of ballot dictionaries by iterating over coefficients folder"""
         coeff_path = self.get_root_path() + "coefficients/"
 
         for coeff_f_name in glob.glob(coeff_path + '*.json'):
             self.coefficient_dics.append(read_json_file(coeff_f_name))
 
     def get_coeff_by_name(self, name):
+        """gets a coefficient dictionary that corresponds with inputted guardian name"""
         if len(self.coefficient_dics) == 0:
             self.find_coefficient_dics()
         if len(self.coeff_order) == 0:
@@ -63,6 +73,7 @@ class Parameters():
         return self.coefficient_dics[self.coeff_order.get(name)]
 
     def fill_coeff_order(self):
+        """fills dictionary that maps guardian names to index of that coefficient dictionary"""
         for i, coeff in enumerate(self.coefficient_dics):
             owner_id = coeff.get("owner_id")
 

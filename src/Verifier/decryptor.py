@@ -5,7 +5,13 @@ from .helpers import mod_p, in_set_Zq, in_set_Zrp, hash_elems, exp_g
 
 
 class Decryptor():
+    """
+    This class is responsible for checking that the ballot decryption is valid
+    Checks Boxes 6 and 9 in the Verifier Construction spec
+    """
+
     def __init__(self, param: Parameters, ballots: Ballots):
+        """initializes decryptor class to use files from parameters and data from ballots"""
         self.param = param
         self.ballots = ballots
         self.contests = param.get_tally().get("contests")
