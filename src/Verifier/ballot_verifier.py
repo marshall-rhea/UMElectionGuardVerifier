@@ -17,16 +17,16 @@ class BallotVerifier():
     def verify_all_ballots(self):
         """perform verification checks on all ballots in election"""
         for ballot in self.param.get_encrypted_ballots():
-            verified = self.verifyBallot(ballot)
+            verified = self.verify_ballot(ballot)
             if not verified[0]:
                 return verified
 
         return (True, {})
 
-    def verifyBallot(self,ballot):
+    def verify_ballot(self,ballot):
         """ Verifies an encrypted ballot """
         for contest in ballot["contests"]:
-            verified = self.verifyContest(contest)
+            verified = self.verify_contest(contest)
             if not verified[0]:
                 return verified
             #print("Verified =",verified)
@@ -34,7 +34,7 @@ class BallotVerifier():
 
         return (True, {})
 
-    def verifyContest(self,contest):
+    def verify_contest(self,contest):
         """ Verifies a contest by checking that each selection in a contest is an encryption of either 1 or 0
         AND that the number of positive selections does not exceed a pre-defined limit """
         A = 1
@@ -47,7 +47,7 @@ class BallotVerifier():
         V = int(contest.get("proof", {}).get("response",None))
         
         for selection in contest.get("ballot_selections",[]):
-            verified,response = self.verifySelection(selection)
+            verified,response = self.verify_selection(selection)
             if(verified):
                 A = A * int(response["alpha"]) % int(self.param.get_large_prime_p())
                 B = B * int(response["beta"]) % int(self.param.get_large_prime_p())
@@ -89,7 +89,7 @@ class BallotVerifier():
         
         return (True, {})
 
-    def verifySelection(self,selection):
+    def verify_selection(self,selection):
         """ Verifies a ballot selection is an encryption of either 1 or 0 pursuant to the checks in [step 3] """
         alpha = int(selection.get("ciphertext", {}).get("pad",None))
         beta = int(selection.get("ciphertext", {}).get("data",None))
